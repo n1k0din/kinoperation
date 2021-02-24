@@ -10,7 +10,7 @@ import io
 
 
 HEADERS = {
-        'X-API-KEY': 'a9b9e3ca-1e32-4070-8e4f-868b5d292b86'
+        'X-API-KEY': config.api_key
     }
 
 FILMS = {}
