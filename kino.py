@@ -5,7 +5,7 @@ from time import sleep
 import config
 import telebot
 from telebot import types
-from random import choice
+from random import choice, shuffle
 import io
 
 
@@ -69,30 +69,46 @@ def welcome_command(message):
 
 @bot.message_handler(content_types=["text"])
 def send_message(message):
-    url = get_random_img()    
+    url, film_id = get_random_img()
+    d = FILMS[film_id]
+    country = d['countries'][0]['country']
+
+    filtered = filter(lambda x: x['countries'][0]['country'] == country, FILMS.values())
+    lst = list(filtered)
+    vars = []
+    for _ in range(3):
+        vars.append(choice(lst)['nameRu'])
+
     response = requests.get(url)
     photo = io.BytesIO(response.content)    
     photo.name = 'img.jpg'
+    vars.append(FILMS[film_id]['nameRu'])
+    shuffle(vars)
+    msg = " или ".join(vars)
 
     if message.chat.type == 'private':
         if message.text == 'Случайный кадр':
             bot.send_photo(message.chat.id, photo)
+            bot.send_message(message.chat.id, msg)
 
 
 def get_random_img():
-    film_id = int(choice(FILMS)['filmId'])
+    
+    film_id = choice(list(FILMS.keys()))
     image_url = frames_by_id(film_id)
-    return choice(image_url['frames'])['image']
+    return choice(image_url['frames'])['image'], film_id
+
+
+def list_of_dicts_to_dict(lst):   
+    
+    return {d['filmId']: d for d in lst}   
+
 
 def main():
     data = data_from_file()
     global FILMS
-    FILMS = data['films']
-    print(len(FILMS))
-    for film in sorted(FILMS, key=lambda x: x['ratingVoteCount'], reverse=True):
-        print(film['nameRu'])
-  
-    
+    films_list = data['films']
+    FILMS = list_of_dicts_to_dict(films_list)
     
     try:
         bot.polling(none_stop=True)
