@@ -72,19 +72,33 @@ def send_message(message):
     url, film_id = get_random_img()
     d = FILMS[film_id]
     country = d['countries'][0]['country']
+    year = int(d['year'])
+    genre = d['genres'][0]['genre']
 
-    filtered = filter(lambda x: x['countries'][0]['country'] == country, FILMS.values())
+    f = lambda x: year - 5 <= int(x['year']) <= year + 5 and \
+                        x['genres'][0]['genre'] != 'мультфильм'
+    if genre == 'мультфильм':
+        f = lambda x: x['genres'][0]['genre'] == genre
+
+
+    filtered = filter(f, FILMS.values())
     lst = list(filtered)
-    vars = []
-    for _ in range(3):
-        vars.append(choice(lst)['nameRu'])
+    options = []
+    options.append(FILMS[film_id]['nameRu'])
+
+    added_count = 0
+    while added_count < 3:
+        choiced = choice(lst)['nameRu']
+        if choiced not in options:       
+            options.append(choiced)
+            added_count += 1
 
     response = requests.get(url)
     photo = io.BytesIO(response.content)    
     photo.name = 'img.jpg'
-    vars.append(FILMS[film_id]['nameRu'])
-    shuffle(vars)
-    msg = " или ".join(vars)
+    
+    shuffle(options)
+    msg = " или ".join(options)
 
     if message.chat.type == 'private':
         if message.text == 'Случайный кадр':
