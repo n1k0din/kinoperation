@@ -15,6 +15,9 @@ HEADERS = {
 
 FILMS = {}
 
+ANSWER = ""
+PREV_ANSWER = ""
+
 bot = telebot.TeleBot(config.token, parse_mode=None)
 
 
@@ -85,6 +88,10 @@ def send_message(message):
     lst = list(filtered)
     options = []
     options.append(FILMS[film_id]['nameRu'])
+    global PREV_ANSWER
+    global ANSWER
+    PREV_ANSWER = ANSWER
+    ANSWER = options[0]
 
     added_count = 0
     while added_count < 3:
@@ -98,12 +105,35 @@ def send_message(message):
     photo.name = 'img.jpg'
     
     shuffle(options)
+
+    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    
+    items = []
+    for option in options:
+        items.append(types.KeyboardButton(option))
+    
+    for item in items:
+        markup.add(item)
+
+    markup.add(types.KeyboardButton('Случайный кадр'))
+    
+    
+
+    print(f'(правильный ответ: {ANSWER}')
     msg = " или ".join(options)
 
     if message.chat.type == 'private':
         if message.text == 'Случайный кадр':
-            bot.send_photo(message.chat.id, photo)
-            bot.send_message(message.chat.id, msg)
+            pass
+            # bot.send_photo(message.chat.id, photo, reply_markup=markup)
+            # bot.send_message(message.chat.id, msg)
+        elif message.text == PREV_ANSWER:
+            bot.send_message(message.chat.id, 'ага')
+        else:
+            bot.send_message(message.chat.id, 'ну бле')
+
+        
+        bot.send_photo(message.chat.id, photo, reply_markup=markup)
 
 
 def get_random_img():
@@ -124,14 +154,12 @@ def main():
     films_list = data['films']
     FILMS = list_of_dicts_to_dict(films_list)
     
-    try:
-        bot.polling(none_stop=True)
-    except ConnectionError as e:
-        print('Ошибка соединения: ', e)
-    except Exception as r:
-        print("Непридвиденная ошибка: ", r)
-    finally:
-        print("Здесь всё закончилось")
+    while True:
+        try:
+            bot.polling(none_stop=True)
+        except ConnectionError as e:
+            print('Ошибка соединения: ', e)       
+            
 
 
 if __name__ == '__main__':
