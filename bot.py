@@ -8,6 +8,8 @@ from app.config_reader import load_config
 from app.handlers.common import register_handlers_common
 from app.handlers.quiz import register_handlers_quiz
 
+from app.controller.kino import Kino
+
 logger = logging.getLogger(__name__)
 
 
@@ -28,11 +30,12 @@ async def main():
     logger.error("Starting bot")
 
     config = load_config("config/bot.ini")
+    print(config)
 
     bot = Bot(token=config.tg_bot.token)
     dp = Dispatcher(bot, storage=MemoryStorage())
 
-    register_handlers_common(dp, config.tg_bot.admin_id)
+    register_handlers_common(dp)
     register_handlers_quiz(dp)
 
     await set_commands(bot)

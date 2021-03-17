@@ -2,14 +2,17 @@ from aiogram import Dispatcher, types
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import State, StatesGroup
 
+from app.controller.kino import Kino
+
 from random import shuffle, choice
 
-answers = [
-    'первый фильм',
-    'фильм 2',
-    'кино тринити',
-    'золотой квартет'
-]
+from app.config_reader import load_config
+
+
+config = load_config("config/bot.ini")
+kino = Kino()
+kino.set_api_token(config.tg_bot.kino_api)
+kino.set_data()
 
 
 class MovieQuiz(StatesGroup):
@@ -20,22 +23,30 @@ class MovieQuiz(StatesGroup):
 
 async def set_question(message, state: FSMContext):
     keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    correct_answer = choice(answers)
-    inner_answers = answers.copy()
-    shuffle(inner_answers)
 
-    for movie in inner_answers:
-        keyboard.add(movie)
+    correct_id = kino.random_id
+    correct_name = kino.data[correct_id]['nameRu']
 
-    await message.answer(f"угадай (правильный ответ {correct_answer})", reply_markup=keyboard)
-    await state.update_data(correct_answer=correct_answer)
+    answers = kino.get_options_list(correct_id)
+
+    for answer in answers:
+        keyboard.add(answer)
+
+    img_url = kino.get_random_img(correct_id)
+
+    await message.answer(f"{img_url}\n(правильный ответ {correct_name})", reply_markup=keyboard)
+
+    await state.update_data(correct_answer=correct_name)
+    await state.update_data(answers=answers)
+
     await MovieQuiz.get_answer.set()
 
 
 async def get_answer(message, state: FSMContext):
     stored_data = await state.get_data()
 
-    user_answer = message.text.lower()
+    user_answer = message.text
+    answers = stored_data['answers']
 
     if user_answer not in answers:
         await message.answer("нормально кнопки нажимай")
