@@ -26,6 +26,7 @@ async def set_question(message, state: FSMContext):
 
     correct_id = kino.random_id
     correct_name = kino.data[correct_id]['nameRu']
+    print(correct_name, correct_id, kino.data[correct_id]['year'])
 
     filtered_data = kino.filter_data(correct_id)
     answers = kino.get_options_list(correct_id, data=filtered_data)

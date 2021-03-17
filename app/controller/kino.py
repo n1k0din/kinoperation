@@ -58,6 +58,9 @@ class Kino:
         options = [self.data[correct_id]['filmId']]
 
         lst = list(data.keys())
+        if len(lst) < n + 1:
+            lst.extend(list(self.data.keys()))
+
 
         # собираем список n уникальных рандомных айдишников
         added_count = 0
@@ -116,8 +119,8 @@ def main():
     kino = Kino()
     kino.set_data()
     # print(kino.get_options_list(474))
-    d = kino.data_filtered_by_year(474)
-    print(kino.get_options_list(474, d))
+    d = kino.filter_data(2127)
+    print(kino.get_options_list(2127, d))
 
 
 
