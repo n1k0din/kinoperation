@@ -1,5 +1,6 @@
 import json
 import requests
+import io
 from random import choice, shuffle
 
 class Kino:
@@ -17,18 +18,46 @@ class Kino:
             data = json.load(f)
         return data
 
+    @staticmethod
+    def get_photo_by_url(url):
+        response = requests.get(url)
+        photo = io.BytesIO(response.content)
+        photo.name = 'img.jpg'
 
-    def get_options_list(self, correct_id, n=3):
+        return photo
+
+    def filter_data(self, film_id, year_delta=5):
+        """
+        Возращает отфильтрованные данные по фильмам
+        с годом выпуска +- year_delta от фильма filmd_id
+        """
+        film = self.data[film_id]
+        year = int(film['year'])
+        genre = film['genres'][0]['genre']
+
+        special_genre = ('мультфильм', 'аниме')
+
+        if genre in special_genre:
+            f = lambda x: x[1]['genres'][0]['genre'] == genre
+        else:
+            f = lambda x: \
+                year - year_delta <= int(x[1]['year']) <= year + year_delta and \
+                x[1]['genres'][0]['genre'] not in special_genre
+
+        lst = list(filter(f, self.data.items()))
+
+        return {k: v for k, v in lst}
+
+
+    def get_options_list(self, correct_id, data, n=3):
         """
         correct_id: id правильного ответа
-
         Возвращает n + 1 случайных названия фильма, включая правильный ответ
         """
 
         options = [self.data[correct_id]['filmId']]
-        print(options)
 
-        lst = list(self.data.keys())
+        lst = list(data.keys())
 
         # собираем список n уникальных рандомных айдишников
         added_count = 0
@@ -40,7 +69,7 @@ class Kino:
 
         # теперь получим имена фильмов
         res = [ self.data[id]['nameRu'] for id in options ]
-        # и помещаем
+        # и помешаем
         shuffle(res)
 
         return res
@@ -87,9 +116,11 @@ def main():
     kino = Kino()
     kino.set_data()
     # print(kino.get_options_list(474))
-    print(kino.random_id)
-    print(kino.random_id)
-    print(kino.random_id)
+    d = kino.data_filtered_by_year(474)
+    print(kino.get_options_list(474, d))
+
+
+
 
 
 

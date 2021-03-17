@@ -27,14 +27,18 @@ async def set_question(message, state: FSMContext):
     correct_id = kino.random_id
     correct_name = kino.data[correct_id]['nameRu']
 
-    answers = kino.get_options_list(correct_id)
+    filtered_data = kino.filter_data(correct_id)
+    answers = kino.get_options_list(correct_id, data=filtered_data)
 
     for answer in answers:
         keyboard.add(answer)
 
     img_url = kino.get_random_img(correct_id)
-
-    await message.answer(f"{img_url}\n(правильный ответ {correct_name})", reply_markup=keyboard)
+    photo_io = Kino.get_photo_by_url(img_url)
+    await message.answer_photo(photo=photo_io,
+                                #caption=correct_name,
+                                reply_markup=keyboard)
+#    await message.answer(f"{img_url}\n(правильный ответ {correct_name})", reply_markup=keyboard)
 
     await state.update_data(correct_answer=correct_name)
     await state.update_data(answers=answers)
