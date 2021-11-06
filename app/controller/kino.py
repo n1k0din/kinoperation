@@ -3,6 +3,7 @@ import requests
 import io
 from random import choice, shuffle
 
+
 class Kino:
     def __init__(self):
         self.headers = {'X-API-KEY': ''}
@@ -10,7 +11,6 @@ class Kino:
 
     def set_api_token(self, token):
         self.headers['X-API-KEY'] = token
-
 
     @staticmethod
     def read_data_from_file(filename='res.json'):
@@ -48,7 +48,6 @@ class Kino:
 
         return {k: v for k, v in lst}
 
-
     def get_options_list(self, correct_id, data, n=3):
         """
         correct_id: id правильного ответа
@@ -61,8 +60,7 @@ class Kino:
         if len(lst) < n + 1:
             lst.extend(list(self.data.keys()))
 
-
-        # собираем список n уникальных рандомных айдишников
+        # собираем список n уникальных рандомных айдишн
         added_count = 0
         while added_count < n:
             random_id = choice(lst)
@@ -71,12 +69,11 @@ class Kino:
                 added_count += 1
 
         # теперь получим имена фильмов
-        res = [ self.data[id]['nameRu'] for id in options ]
-        # и помешаем
+        res = [self.data[id]['nameRu'] for id in options]
+
         shuffle(res)
 
         return res
-
 
     def set_data(self):
         # данные приходят в виде 'films': 'куча_данных'
@@ -84,8 +81,7 @@ class Kino:
         data = Kino.read_data_from_file()['films']
 
         # сделаем словарь {ид_фильма : вся_инфа_о_фильме}
-        self.data = { d['filmId']: d for d in data }
-
+        self.data = {d['filmId']: d for d in data}
 
     def frames_by_id(self, film_id):
         """
@@ -95,22 +91,22 @@ class Kino:
         r = requests.get(url, headers=self.headers)
         return r.json()
 
-
     def get_random_img(self, film_id):
         """
         Возвращает ссылку на рандомный кадр по id фильма
         """
 
         # film_id = choice(list(self.data.keys()))
-        #
         image_urls = self.frames_by_id(film_id)
 
-        return choice(image_urls['frames'])['image']
+        if 'frames' in image_urls:
+            return choice(image_urls['frames'])['image']
+
+        return None
 
     @property
     def random_id(self):
         return choice(list(self.data.keys()))
-
 
 
 
@@ -121,11 +117,8 @@ def main():
     # print(kino.get_options_list(474))
     d = kino.filter_data(2127)
     print(kino.get_options_list(2127, d))
-
-
-
-
-
+    # 77413: Земляне, 2005
+    print(kino.get_random_img(77413))
 
 
 if __name__ == '__main__':

@@ -1,6 +1,7 @@
 from aiogram import Dispatcher, types
 from aiogram.dispatcher import FSMContext
-from aiogram.dispatcher.filters import Text, IDFilter
+# from aiogram.dispatcher.filters import Text, IDFilter
+
 
 async def cmd_start(message, state: FSMContext):
     await state.finish()
@@ -19,7 +20,10 @@ async def cmd_cancel(message, state: FSMContext):
 
 
 async def secret_command(message):
-    await anwswer("дарова отец")
+    """
+    Не используется
+    """
+    await message.answer("дарова отец")
 
 
 def register_handlers_common(dp: Dispatcher):
